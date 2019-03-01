@@ -33,10 +33,14 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 
+#define LOG_TAG "httpd"
+#include <elog.h>
+
 #define ISspace(x) isspace((int)(x))
 
 #define SERVER_STRING "Server: jdbhttpd/0.1.0\r\n"
 
+void httpd_elog_init();
 void accept_request(int);
 void bad_request(int);
 void cat(int, FILE *);
@@ -49,6 +53,26 @@ void not_found(int);
 void serve_file(int, const char *);
 int startup(u_short *);
 void unimplemented(int);
+
+void httpd_elog_init()
+{
+    /* close printf buffer */
+    setbuf(stdout, NULL);
+    /* initialize EasyLogger */
+    elog_init();
+    /* set EasyLogger log format */
+    elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
+    elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+    elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+    elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
+    elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
+    elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
+#ifdef ELOG_COLOR_ENABLE
+    elog_set_text_color_enabled(true);
+#endif
+    /* start EasyLogger */
+    elog_start();
+}
 
 /**********************************************************************/
 /* A request has caused a call to accept() on the server port to
@@ -579,9 +603,11 @@ int main(void)
  struct sockaddr_in client_name;
  int client_name_len = sizeof(client_name);
  //pthread_t newthread;
+ 
+ httpd_elog_init();//
 
  server_sock = startup(&port);
- printf("httpd running on port %d\n", port);
+ log_d("httpd running on port %d\n", port);
 
  while (1)
  {

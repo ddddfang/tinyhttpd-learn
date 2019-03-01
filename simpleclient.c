@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
  //inet_addr 可以参考 man inet_addr
  //可以用现代的inet_pton()替代inet_addr(), example 中有参考例子
  address.sin_addr.s_addr = inet_addr("127.0.0.1");
- address.sin_port = htons(9734);
+ address.sin_port = htons(53704);
  len = sizeof(address);
  
  //下面的语句可以输出连接的 IP 地址
